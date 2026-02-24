@@ -92,7 +92,111 @@
     2. 构造皮肤直链地址：`http://160.202.254.36:10159/[文件名].png`。
     3. 通过 **RCON** 协议 (端口 25575) 向 MC 服务器执行指令：
        `skin set web [model] "[url]" [playerName]`
+* 以下是主要控制器（Controller）代码，由我自己编写，仅供参考
 
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using CoreRCON; // 引入 CoreRCON
+using System.Net;
+using System.IO;
+
+namespace UploadPlayerSkin.Controllers
+{
+	[ApiController]
+	[Route("api/skin")]
+	public class SkinController : ControllerBase
+	{
+		// 1. 配置信息
+		private readonly string _targetFolder = "/root/mcserver/player.skin.d/";
+		private const string McServerIp = "127.0.0.1"; // MC服务器IP
+		private const ushort McRconPort = 25575;      // RCON端口
+		private const string McRconPassword = "NA,f`1Ya%/ggI|[4V%%[";
+		private const string BaseUrl = "http://160.202.254.14:10159"; // 外部访问的基础URL
+
+		[HttpPost("upload")]
+		public async Task<IActionResult> UploadSkin(
+			IFormFile file,
+			[FromForm] string playerName,
+			[FromForm] string skinModel) // <-- 新增参数接收：classic 或 slim
+		{
+			// --- 基础检查 ---
+			if (file == null || file.Length == 0)
+				return BadRequest("请选择一个文件");
+
+			if (string.IsNullOrWhiteSpace(playerName))
+				return BadRequest("请输入玩家名称");
+
+			// 如果前端没传，默认设为粗手臂 classic
+			if (string.IsNullOrWhiteSpace(skinModel))
+				skinModel = "classic";
+
+			var extension = Path.GetExtension(file.FileName).ToLower();
+			if (extension != ".png")
+				return BadRequest("只允许上传 .png 格式的皮肤文件");
+
+			try
+			{
+				// 1. 确保目录存在
+				if (!Directory.Exists(_targetFolder))
+				{
+					Directory.CreateDirectory(_targetFolder);
+				}
+
+				// 2. 保存文件 (保留你的随机数逻辑)
+				string fileName = $"{playerName}.{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fffff}.png";
+				string filePath = Path.Combine(_targetFolder, fileName);
+
+				using (var stream = new FileStream(filePath, FileMode.Create))
+				{
+					await file.CopyToAsync(stream);
+				}
+
+				// 3. 构造皮肤 URL
+				string skinUrl = $"{BaseUrl}/{fileName}";
+
+				// 4. 通过 RCON 执行命令，传入 skinModel (classic/slim)
+				string rconResult = await ExecuteSkinCommand(playerName, skinUrl, skinModel);
+
+				return Ok(new
+				{
+					message = $"皮肤已上传并尝试更新",
+					fileName = fileName,
+					url = skinUrl,
+					model = skinModel,
+					serverFeedback = rconResult
+				});
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, $"操作失败: {ex.Message}");
+			}
+		}
+
+		/// <summary>
+		/// 封装执行 RCON 命令的方法
+		/// </summary>
+		private async Task<string> ExecuteSkinCommand(string playerName, string url, string skinModel)
+		{
+			try
+			{
+				using var rcon = new RCON(IPAddress.Parse(McServerIp), McRconPort, McRconPassword);
+				await rcon.ConnectAsync();
+
+				// 将原本硬编码的 "classic" 替换为变量 {skinModel}
+				// 结果示例：skin set web slim "http://..." PlayerName
+				string command = $"skin set web {skinModel} \"{url}\" {playerName}";
+
+				string response = await rcon.SendCommandAsync(command);
+				return response;
+			}
+			catch (Exception ex)
+			{
+				return $"RCON命令执行失败: {ex.Message}";
+			}
+		}
+	}
+}
+```
 ### 5.3 Nginx 静态服务
 *   **作用**: 将 `/root/mcserver/player.skin.d` 目录映射至外部。
 *   **配置文件**: `/etc/nginx/conf.d/share.conf` 下的配置已开启 `autoindex`。
