@@ -255,7 +255,7 @@ namespace UploadPlayerSkin.Controllers
 5.  **替换数据**:
     ```bash
     mv /root/mcserver/234mc/world /root/mcserver/234mc/world_old
-    cp -r /tmp/mc_check/world /root/mcserver/234mc/
+    cp -r /tmp/mc_check /
     ```
 6.  **启动进程**: 重新运行 Java [启动命令](#32-运行与更新)。
 
