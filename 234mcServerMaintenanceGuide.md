@@ -61,8 +61,7 @@
 ### 3.2 运行与更新
 *   **启动命令**: 
     ```bash
-    screen -r 234mc
-    java -Xmx8G -Xms8G -jar fabric-server-launch.jar nogui
+    java -Xmx8G -Xms2G -jar fabric-server-launch.jar nogui
     ```
 *   **正常关闭**: 在 `234mc` 会话中输入 `stop` 并回车，待提示保存完成后会自动结束。或者在进入了对应的screen会话后直接Ctrl+C也能关闭服务器。
 *   **模组维护**: 若要更新模组，直接将新的 `.jar` 文件放入 `/root/mcserver/234mc/mods`，并删除对应的旧版文件，随后重启服务器。
@@ -114,7 +113,7 @@
     ```
     *注：仓库密码为 `123456`。*
 
-### 6.2 恢复数据流程
+### 6.2 恢复数据流程（~~此流程仅供参考，具体内容请自己在恢复快照到/tmp之后查看其文件夹结构然后再手动复制粘贴~~）
 1.  **停止服务器**: `screen -r 234mc` 后输入 `stop`或者直接CTRL+C。
 2.  **选择快照**: 使用 `snapshots` 命令找到目标 ID。
 3.  **先恢复至临时目录**:
