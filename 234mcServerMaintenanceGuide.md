@@ -244,20 +244,12 @@ namespace UploadPlayerSkin.Controllers
     *注：仓库密码为 `123456`。*
 
 ### 6.2 恢复数据流程
-（~~此流程仅供参考，具体内容请自己在恢复快照到/tmp之后查看其文件夹结构然后再手动复制粘贴~~）
 1.  **停止服务器**: `screen -r 234mc` 后输入 `stop`或者直接CTRL+C。
 2.  **选择快照**: 使用 `snapshots` 命令找到目标 ID。
-3.  **先恢复至临时目录**:
+3.  **恢复**:
     ```bash
-    sudo restic -r /srv/my_backups -p /root/.restic_pw restore [快照ID] --target /tmp/mc_check
-    ```
-4.  **校验结构**: 检查 `/tmp/mc_check` 下是否包含了完整的 `world` 文件夹结构。
-5.  **替换数据**:
-    ```bash
-    mv /root/mcserver/234mc/world /root/mcserver/234mc/world_old
-    cp -r /tmp/mc_check /
-    ```
-6.  **启动进程**: 重新运行 Java [启动命令](#32-运行与更新)。
+    sudo restic -r /srv/my_backups -p /root/.restic_pw restore [快照ID] --target /
+4.  **启动进程**: 重新运行 Java [启动命令](#32-运行与更新)。
 
 ---
 
