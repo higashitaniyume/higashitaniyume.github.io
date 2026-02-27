@@ -249,6 +249,7 @@ namespace UploadPlayerSkin.Controllers
 3.  **恢复**:
     ```bash
     sudo restic -r /srv/my_backups -p /root/.restic_pw restore [快照ID] --target /
+	```
 4.  **启动进程**: 重新运行 Java [启动命令](#32-运行与更新)。
 
 ---
